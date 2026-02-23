@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Přetahování lanem</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+margin:0;
+background:#FFF3B0;
+font-family:'Baloo 2', cursive;
+text-align:center;
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+overflow:hidden;
+}
+
+h1{
+margin:8px;
+font-size:36px;
+}
+
+#score{
+font-size:22px;
+}
+
+#ropeArea{
+position:relative;
+height:140px;
+}
+
+#line{
+position:absolute;
+left:50%;
+top:0;
+bottom:0;
+width:4px;
+background:black;
+}
+
+#ropeWrapper{
+position:absolute;
+left:50%;
+top:-90px;
+transform:translateX(-50%);
+transition:0.35s;
+}
+
+#ropeWrapper img{
+height:300px;
+}
+
+#panels{
+display:flex;
+justify-content:center;
+gap:550px;
+padding-bottom:40px;
+}
+
+.panel{
+border-radius:18px;
+padding:15px;
+width:240px;
+height:360px;
+box-shadow:0 6px 14px rgba(0,0,0,0.2);
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+}
+
+.left{
+background:#ffb3b3;
+}
+
+.right{
+background:#b7f5b7;
+}
+
+.example{
+font-size:34px;
+background:#cfe8ff;
+padding:10px;
+border-radius:10px;
+}
+
+.display{
+font-size:32px;
+height:40px;
+border-bottom:3px solid #333;
+}
+
+.buttons{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:6px;
+}
+
+button{
+font-size:26px;
+padding:14px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+}
+
+button:hover{
+transform:scale(1.05);
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Přetahování lanem násobilka 2</h1>
+
+<div id="score">
+Levý hráč: <span id="scoreL">0</span> |
+Pravý hráč: <span id="scoreR">0</span>
+</div>
+
+<div id="ropeArea">
+
+<div id="line"></div>
+
+<div id="ropeWrapper">
+<img src="lano.png">
+</div>
+
+</div>
+
+<div id="panels">
+
+<div class="panel left">
+<div id="exL" class="example"></div>
+<div id="dispL" class="display"></div>
+<div class="buttons" id="buttonsL"></div>
+</div>
+
+<div class="panel right">
+<div id="exR" class="example"></div>
+<div id="dispR" class="display"></div>
+<div class="buttons" id="buttonsR"></div>
+</div>
+
+</div>
+
+<script>
+
+let position=0
+let win=7
+
+let scoreL=0
+let scoreR=0
+
+let ansL
+let ansR
+
+function updateScore(){
+document.getElementById("scoreL").textContent=scoreL
+document.getElementById("scoreR").textContent=scoreR
+}
+
+function newExample(side){
+
+if(!side || side==="L"){
+if(Math.random()<0.5){
+let n=Math.floor(Math.random()*10)+1
+document.getElementById("exL").textContent=n+" × 2"
+ansL=n*2
+}else{
+let n=(Math.floor(Math.random()*10)+1)*2
+document.getElementById("exL").textContent=n+" ÷ 2"
+ansL=n/2
+}
+}
+
+if(!side || side==="R"){
+if(Math.random()<0.5){
+let n=Math.floor(Math.random()*10)+1
+document.getElementById("exR").textContent=n+" × 2"
+ansR=n*2
+}else{
+let n=(Math.floor(Math.random()*10)+1)*2
+document.getElementById("exR").textContent=n+" ÷ 2"
+ansR=n/2
+}
+}
+
+}
+
+function createButtons(side){
+
+let container=document.getElementById("buttons"+side)
+
+for(let i=1;i<=9;i++){
+let b=document.createElement("button")
+b.textContent=i
+b.onclick=()=>press(side,i)
+container.appendChild(b)
+}
+
+let zero=document.createElement("button")
+zero.textContent="0"
+zero.onclick=()=>press(side,0)
+container.appendChild(zero)
+
+let ok=document.createElement("button")
+ok.textContent="OK"
+ok.onclick=()=>check(side)
+container.appendChild(ok)
+
+let del=document.createElement("button")
+del.textContent="⌫"
+del.onclick=()=>back(side)
+container.appendChild(del)
+
+}
+
+function press(side,n){
+let d=document.getElementById("disp"+side)
+d.textContent+=n
+}
+
+function back(side){
+let d=document.getElementById("disp"+side)
+d.textContent=d.textContent.slice(0,-1)
+}
+
+function check(side){
+
+let d=document.getElementById("disp"+side)
+let val=Number(d.textContent)
+
+if(side==="L" && val===ansL){
+scoreL++
+position++
+move()
+d.textContent=""
+newExample("L")
+}
+
+if(side==="R" && val===ansR){
+scoreR++
+position--
+move()
+d.textContent=""
+newExample("R")
+}
+
+updateScore()
+
+}
+
+function move(){
+
+let rope=document.getElementById("ropeWrapper")
+rope.style.transform="translateX(calc(-50% + "+(position*40)+"px))"
+
+if(position>=win){
+alert("Vyhrál levý hráč!")
+resetRound()
+}
+
+if(position<=-win){
+alert("Vyhrál pravý hráč!")
+resetRound()
+}
+
+}
+
+function resetRound(){
+position=0
+document.getElementById("ropeWrapper").style.transform="translateX(-50%)"
+document.getElementById("dispL").textContent=""
+document.getElementById("dispR").textContent=""
+newExample()
+}
+
+createButtons("L")
+createButtons("R")
+newExample()
+updateScore()
+
+</script>
+
+</body>
+</html>
